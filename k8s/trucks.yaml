@@ -1,0 +1,252 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dd-garbage-trucks-controller
+  namespace: dd-garbage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dd-garbage-trucks-controller
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/path: /metrics
+        prometheus.io/port: '443'
+      labels:
+        app: dd-garbage-trucks-controller
+    spec:
+      containers:
+      - name: dd-garbage-trucks-controller
+        image: dd-garbage-trucks-controller:latest
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 250m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dd-garbage-trucks-controller-entrypoint
+  namespace: dd-garbage
+spec:
+  type: NodePort
+  selector:
+    app: dd-garbage-trucks-controller
+  ports:
+  - port: 443
+    targetPort: 443
+    nodePort: 30002
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dd-garbage-trucks-dh
+  namespace: dd-garbage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dd-garbage-trucks-dh
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/path: /metrics
+        prometheus.io/port: '443'
+      labels:
+        app: dd-garbage-trucks-dh
+    spec:
+      containers:
+      - name: dd-garbage-trucks-dh
+        image: dd-garbage-trucks-dh:latest
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 250m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dd-garbage-trucks-dh-entrypoint
+  namespace: dd-garbage
+spec:
+  selector:
+    app: dd-garbage-trucks-dh
+  ports:
+  - protocol: TCP
+    port: 443
+    targetPort: 443
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dd-garbage-trucks-eh
+  namespace: dd-garbage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dd-garbage-trucks-eh
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/path: /metrics
+        prometheus.io/port: '443'
+      labels:
+        app: dd-garbage-trucks-eh
+    spec:
+      containers:
+      - name: dd-garbage-trucks-eh
+        image: dd-garbage-trucks-eh:latest
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 250m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dd-garbage-trucks-eh-entrypoint
+  namespace: dd-garbage
+spec:
+  selector:
+    app: dd-garbage-trucks-eh
+  ports:
+  - protocol: TCP
+    port: 443
+    targetPort: 443
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dd-garbage-trucks-reflection
+  namespace: dd-garbage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dd-garbage-trucks-reflection
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/path: /metrics
+        prometheus.io/port: '443'
+      labels:
+        app: dd-garbage-trucks-reflection
+    spec:
+      containers:
+      - name: dd-garbage-trucks-reflection
+        image: dd-garbage-trucks-reflection:latest
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 250m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dd-garbage-trucks-reflection-entrypoint
+  namespace: dd-garbage
+spec:
+  selector:
+    app: dd-garbage-trucks-reflection
+  ports:
+  - protocol: TCP
+    port: 443
+    targetPort: 443
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dd-garbage-trucks-virtualizer
+  namespace: dd-garbage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dd-garbage-trucks-virtualizer
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/path: /metrics
+        prometheus.io/port: '443'
+      labels:
+        app: dd-garbage-trucks-virtualizer
+    spec:
+      containers:
+      - name: dd-garbage-trucks-virtualizer
+        image: dd-garbage-trucks-virtualizer:latest
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 250m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dd-garbage-trucks-virtualizer-entrypoint
+  namespace: dd-garbage
+spec:
+  selector:
+    app: dd-garbage-trucks-virtualizer
+  ports:
+  - protocol: TCP
+    port: 443
+    targetPort: 443
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: dd-garbage-trucks-controller
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: dd-garbage-trucks-controller
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: dd-garbage-trucks-dh
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: dd-garbage-trucks-dh
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
