@@ -1,7 +1,7 @@
 # Garbage-IIoT experimental scenario
 Experimental scenario of a garbage recollection service using DD.
 
-## Requisits
+## Requirements
 
 To execute this scenario, you need to have installed the following software:
 
